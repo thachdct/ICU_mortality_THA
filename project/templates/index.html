@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ICU</title>
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .form-container {
+            max-width: 700px;
+            margin: 50px auto;
+            padding: 20px;
+            border: 1px solid #e3e3e3;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        .form-header {
+            text-align: center;
+            margin-bottom: 10px;
+            line-height: 1.2;
+        }
+        .details-container, .patient-info-container {
+            display: none;
+        }
+
+        .logo {
+            width: 80px;
+            display: block;
+            margin: 0 auto;
+        }
+
+        table th, table td {
+            text-align: center; 
+            vertical-align: middle; 
+        }
+    </style>
+</head>
+<body>s
+    <div class="container form-container">
+        <p class="form-header">ỦY BAN NHÂN DÂN THÀNH PHỐ HỒ CHÍ MINH</p>
+        <p class="form-header"><strong>TRƯỜNG ĐẠI HỌC SÀI GÒN</strong></p>
+        <p class="form-header">----------</p>
+        <img src="{{ url_for('static', filename='images/sgu_logo.png') }}" alt="Logo" class ="logo"/>
+        <br></br>
+        <h2 class="form-header">ỨNG DỤNG MÁY HỌC ĐỂ DỰ ĐOÁN KHẢ NĂNG TỬ VONG CỦA BỆNH NHÂN TẠI PHÒNG CHĂM SÓC TÍCH CỰC (ICU)</h2>
+        <p class="form-header">Học viên: Nguyễn Ngọc Thạch</p>
+        <p class="form-header">Giảng viên hướng dẫn: TS Vũ Ngọc Thanh Sang</p>
+        <br></br>
+        <form id="predictionForm">
+            <div class="form-group">
+                <label for="predictionTime">Lựa chọn thời gian dự đoán:</label>
+                <select class="form-control" id="predictionTime" onchange="showFormBasedOnTime()">
+                    <option value="">Chọn thời gian</option>
+                    <option value="nhapVien">Nhập viện</option>
+                    <option value="sau24h">Sau 24h</option>
+                    <option value="sau48h">Sau 48h</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="importExcel">Import Excel:</label>
+                <input type="file" class="form-control-file" id="importExcel" accept=".xlsx, .xls">
+            </div>
+
+            <button type="button" class="btn btn-primary btn-block" data-toggle="modal" data-target="#successModal">Dự đoán</button>
+        </form>
+    </div>
+</div>
+
+    <div class="modal fade" id="successModal" tabindex="-1" role="dialog" aria-labelledby="successModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="successModalLabel">Thông báo</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    Dự đoán thành công
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" data-dismiss="modal" onclick="showPatientInfo()">Xem kết quả</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container details-container" id="detailsScreen">
+        <h2 class="form-header">Chi tiết kết quả xét nghiệm</h2>
+        <table class="table table-striped">
+            <tbody>
+                <tr>
+                </tr>
+                <th style="text-align: left;">ID:</th>
+                <td id="detailID"></td>
+            </tr>
+                    <th style="text-align: left;">Tuổi: </th>
+                    <td id="detailAge"></td>
+                </tr>
+                <tr>
+                    <th style="text-align: left;">Giới tính: </th>
+                    <td id="detailGender"></td>
+                </tr>
+                <tr>
+                    <th style="text-align: left;">BMI: </th>
+                    <td id="detailBMI"></td>
+                </tr>
+            </tbody>
+        </table>
+        <h3>Chi tiết xét nghiệm</h3>
+        <table class="table table-striped table-hover">
+            <thead>
+                <tr>
+                    <th>STT</th>
+                    <th>Tên</th>
+                    <th>Đơn vị</th>
+                    <th>B.Thường</th>
+                    <th>Nhập viện</th>
+                    <th>KQ1</th>
+                    <th>T.Dõi Sau 24h</th>
+                    <th>KQ2</th>
+                    <th>T.Dõi sau 48h</th>
+                    <th>KQ3</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>01</td>
+                    <td>AST</td>
+                    <td>u/L</td>
+                    <td>≤37</td>
+                    <td>37</td>
+                    <td>Bình thường</td>
+                    <td>38</td>
+                    <td>Cao</td>
+                    <td>38.5</td>
+                    <td>Cao</td>
+                </tr>
+            </tbody>
+        </table>
+        <button class="btn btn-primary" onclick="redirectToPatientInfo()">Danh sách bệnh nhân</button>
+    </div>
+
+    <div class="container patient-info-container" id="patientInfoScreen">
+        <h2 class="form-header">Thông tin dự đoán khả năng tử vong</h2>
+
+        <table class="table table-striped table-hover">
+            <thead>
+                <tr>
+                    <th>STT</th>
+                    <th>ID</th>
+                    <th>Dự đoán lần 1 (%)</th>
+                    <th>Dự đoán lần 2 (%)</th>
+                    <th>Dự đoán lần 3 (%)</th>
+                    <th>Chi tiết</th>
+                </tr>
+           </thead>
+            <tbody>
+                <tr>
+                    <td>1</td>
+                    <td>001</td>
+                    <td>15</td>
+                    <td>65</td>
+                    <td>35</td>
+					<td>
+                      <button type="button" class="btn btn-secondary" data-dismiss="modal" onclick="showDetails()">Xem chi tiết</button>
+					</td>
+                </tr>
+            </tbody>
+        </table>
+        <button class="btn btn-primary" onclick="redirectToUpload()">Quay lại</button>
+    </div>
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/2.11.6/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/5.3.0/js/bootstrap.min.js"></script>
+    <script>
+        function showFormBasedOnTime() {
+            const predictionTime = document.getElementById('predictionTime').value;
+            document.getElementById('nhapVienForm').classList.add('d-none');
+            document.getElementById('sau24hForm').classList.add('d-none');
+            document.getElementById('sau48hForm').classList.add('d-none');
+            if (predictionTime === 'nhapVien') {
+                document.getElementById('nhapVienForm').classList.remove('d-none');
+            } else if (predictionTime === 'sau24h') {
+                document.getElementById('sau24hForm').classList.remove('d-none');
+            } else if (predictionTime === 'sau48h') {
+                document.getElementById('sau48hForm').classList.remove('d-none');
+            }
+        }
+
+        function submitForm() {
+            $('#successModal').modal('show');
+            $('#successModal').on('hidden.bs.modal', function () {
+                showPatientInfo();
+            });
+        }
+
+        function showDetailsScreen() {
+            document.querySelector('.form-container').style.display = 'none';
+            document.getElementById('detailsScreen').style.display = 'block';
+        }
+
+        function showDetails() {
+            document.querySelector('.form-container').style.display = 'none';
+            document.getElementById('patientInfoScreen').style.display = 'none';
+            document.getElementById('detailsScreen').style.display = 'block';
+        }
+
+        function showPatientInfo() {
+            document.querySelector('.form-container').style.display = 'none';
+            document.getElementById('detailsScreen').style.display = 'none';
+            document.getElementById('patientInfoScreen').style.display = 'block';
+        }
+
+        function redirectToPatientInfo() {
+            document.getElementById('detailsScreen').style.display = 'none';
+            document.getElementById('patientInfoScreen').style.display = 'block';
+        }
+
+        function redirectToUpload() {
+            document.getElementById('patientInfoScreen').style.display = 'none';
+            document.querySelector('.form-container').style.display = 'block';
+        }
+    </script>
+</body>
+</html>
